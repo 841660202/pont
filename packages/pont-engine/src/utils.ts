@@ -77,6 +77,7 @@ export class DataSourceConfig {
   prettierConfig: ResolveConfigOptions = {};
   /** 单位为秒，默认 20 分钟 */
   pollingTime = 60 * 20;
+  // pollingTime = 5;
   mocks = new Mocks();
 
   constructor(config: DataSourceConfig) {
@@ -355,6 +356,7 @@ export function getTemplate(templatePath, templateType, defaultValue = defaultTe
   if (!fs.existsSync(templatePath + '.ts')) {
     fs.writeFileSync(templatePath + '.ts', getTemplateByTemplateType(templateType) || defaultValue);
   }
+  // ts是不可运行的需要转译成js
   const tsResult = fs.readFileSync(templatePath + '.ts', 'utf8');
   const jsResult = ts.transpileModule(tsResult, {
     compilerOptions: {
@@ -482,7 +484,7 @@ export async function createManager(configFile = CONFIG_FILE) {
 
 export function diffDses(ds1: StandardDataSource, ds2: StandardDataSource) {
   const mapModel = (model) => Object.assign({}, model, { details: [] }) as any;
-
+ // modDiffs 计算错误，没变化，也计算出来变化
   const modDiffs = diff(ds1.mods.map(mapModel), ds2.mods.map(mapModel));
   const boDiffs = diff(ds1.baseClasses.map(mapModel), ds2.baseClasses.map(mapModel));
 
@@ -491,7 +493,7 @@ export function diffDses(ds1: StandardDataSource, ds2: StandardDataSource) {
     boDiffs
   };
 }
-
+// 修正模块名
 export function reviseModName(modName: string) {
   // .replace(/\//g, '.').replace(/^\./, '').replace(/\./g, '_') 转换 / .为下划线
   // exp: /api/v1/users  => api_v1_users

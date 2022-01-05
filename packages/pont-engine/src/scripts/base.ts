@@ -77,15 +77,22 @@ export class OriginBaseReader {
   /** 获取接口数据，解析并返回 */
   async fetchRemoteData(): Promise<StandardDataSource> {
     try {
+
+      // 获取的sagger.json数据
       const data = await this.fetchData();
 
       // 将数据源转换为标准数据源格式
+      /**
+       * mods
+       * baseClasses
+       */
       let remoteDataSource = this.transform2Standard(data, this.config.usingOperationId, this.config.name);
       this.report('远程数据解析完毕!');
 
       // 如果用户配置了数据的自定义转换方法、如接口过滤等
       if (this.config.transformPath) {
         this.report('获取用户自定义数据转换方法中...');
+        // 返回js代码块
         const transformProgram = Config.getTransformFromConfig(this.config);
 
         remoteDataSource = transformProgram(remoteDataSource);

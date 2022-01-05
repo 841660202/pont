@@ -13,6 +13,11 @@ export async function readRemoteDataSource(config: DataSourceConfig, report: any
       return new SwaggerV3Reader(config, report).fetchRemoteData();
     }
     case OriginType.SwaggerV2: {
+      // 返回数据
+      /**
+       * mods
+       * baseClasses
+       */
       return new SwaggerV2Reader(config, report).fetchRemoteData();
     }
     default:

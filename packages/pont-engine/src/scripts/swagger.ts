@@ -756,6 +756,11 @@ export function transformSwaggerV3Data2Standard(
   });
 }
 
+/**
+ * 返回数据
+ * mods
+ * baseClasses
+ */
 export class SwaggerV2Reader extends OriginBaseReader {
   transform2Standard(data, usingOperationId: boolean, originName: string) {
     return transformSwaggerData2Standard(data, usingOperationId, originName);

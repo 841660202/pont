@@ -32,9 +32,19 @@ class Mocks {
   }
 
   getBaseClassMocksFn(clazz: BaseClass) {
+    // 属性对应的值
+
+// length:10
+// 6:'pathName: '我是字串''
+// 5:'path: '我是字串''
+// 4:'orgId: 4.720664706443634'
+// 3:'orgEname: '我是字串''
+// 2:'orgCname: '我是字串''
+// 1:'mainDutyFlag: 66.16079746160668'
+// 0:'leaderFlag: 67.16201152183025'
     const props = [] as string[];
 
-    clazz.properties.forEach(prop => {
+    clazz.properties.forEach((prop) => {
       let { name, dataType } = prop;
       const templateIndex = dataType.templateIndex;
 
@@ -58,13 +68,13 @@ class Mocks {
     const { typeName, isDefsType, initialValue, typeArgs, templateIndex } = response;
 
     if (isDefsType) {
-      const defClass = this.bases.find(bs => bs.name === typeName);
+      const defClass = this.bases.find((bs) => bs.name === typeName);
 
       if (!defClass) {
         return '{}';
       }
 
-      return `defs.${defClass.name}(${typeArgs.map(arg => this.getDefaultMocks(arg)).join(', ')})`;
+      return `defs.${defClass.name}(${typeArgs.map((arg) => this.getDefaultMocks(arg)).join(', ')})`;
     } else if (typeName === 'Array') {
       if (typeArgs.length) {
         const item = this.getDefaultMocks(typeArgs[0]);
@@ -83,7 +93,7 @@ class Mocks {
   }
 
   getMocksCode(wrapper) {
-    const classes = this.ds.baseClasses.map(clazz => {
+    const classes = this.ds.baseClasses.map((clazz) => {
       return this.getBaseClassMocksFn(clazz);
     });
 
@@ -111,14 +121,14 @@ class Mocks {
 
       export default {
       ${this.ds.mods
-        .map(mod => {
+        .map((mod) => {
           const modName = mod.name;
 
           return `
           /** ${mod.description} */
           ${modName}: {
             ${mod.interfaces
-              .map(inter => {
+              .map((inter) => {
                 const interName = inter.name;
                 const interRes = this.getDefaultMocks(inter.response);
 
@@ -167,20 +177,26 @@ export class MocksServer {
   async getCurrMocksData() {
     await this.checkMocksPath();
     const rootPath = vscode.workspace.rootPath;
+    // 模拟数据
     const mockPath = path.join(rootPath, '.mocks');
     const sourcePath = path.join(mockPath, 'mocks.ts');
+    // 不缓存
     const noCacheFix = (Math.random() + '').slice(2, 5);
+    // 模拟数据路径
     const jsPath = path.join(mockPath, `mocks.${noCacheFix}.js`);
     const code = fs.readFileSync(sourcePath, 'utf8');
-
+    // 使用ts进行模块转化,输出模块，导出js可以调用的数据
     const { outputText } = ts.transpileModule(code, {
       compilerOptions: {
         target: ts.ScriptTarget.ES2015,
         module: ts.ModuleKind.CommonJS
       }
     });
+    // 同步写入数据
     fs.writeFileSync(jsPath, outputText);
+    // 读取模拟数据
     const currMocksData = require(jsPath).default;
+    // 同步删除
     fs.unlinkSync(jsPath);
 
     return currMocksData;
@@ -188,7 +204,7 @@ export class MocksServer {
 
   getMocksCode() {
     const wrapper = this.manager.currConfig.mocks.wrapper;
-    const wrapperFn = wrapper ? dataCode => wrapper.replace(/{response}/g, dataCode) : data => data;
+    const wrapperFn = wrapper ? (dataCode) => wrapper.replace(/{response}/g, dataCode) : (data) => data;
 
     const code = new Mocks(this.manager.currLocalDataSource).getMocksCode(wrapperFn);
     return format(code, this.manager.currConfig.prettierConfig);
@@ -227,19 +243,21 @@ export class MocksServer {
 
     return http
       .createServer(async (req, res) => {
+        // 返回es5编译后的数据
         const mocksData = await this.getCurrMocksData();
 
-        ds.mods.forEach(mod => {
-          mod.interfaces.forEach(async inter => {
+        ds.mods.forEach((mod) => {
+          mod.interfaces.forEach(async (inter) => { // 对模块下的接口进行遍历，找出url对应的接口，如果找不到返回404
             // 把 url int path 的参数，转换为匹配参数的正则表达式
             const reg = new RegExp(
               '^' + inter.path.replace(/\//g, '\\/').replace(/{.+?}/g, '[0-9a-zA-Z_-]*?') + '(\\?|$)'
             );
 
             if (req.url.match(reg) && req.method.toUpperCase() === inter.method.toUpperCase()) {
-              const wrapperRes = JSON.stringify(Mock.mock(mocksData[mod.name][inter.name]));
+              const data = Mock.mock(mocksData[mod.name][inter.name]);
+              const wrapperRes = JSON.stringify(data);
               res.writeHead(200, {
-                'Content-Type': 'text/json;charset=UTF-8',
+                'Content-Type': 'application/json;charset=UTF-8',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
                 'Access-Control-Max-Age': 2592000 // 30 days

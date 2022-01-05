@@ -155,23 +155,23 @@ export class Control {
     this.watchLocalFile();
     createMenuCommand(this.manager);
   }
-
+  // 是否是多个
   get isMultiple() {
     return this.manager.allConfigs.length > 1;
   }
-
+  // 创建命令
   createCommands() {
     _.forEach(this.commands, (value, key) => {
       vscode.commands.registerCommand(value, this[key].bind(this));
     });
   }
-
+  // 刷新模拟数据
   refreshMocks() {
     if (MocksServer.singleInstance) {
       MocksServer.singleInstance.refreshMocksCode();
     }
   }
-
+  // 查找接口
   findInterface(ignoreEdit = false) {
     const items = this.manager.currLocalDataSource.mods
       .map(mod => {
@@ -218,7 +218,7 @@ export class Control {
         return code.split('.').filter(id => id);
       });
   }
-
+  // 切换源
   switchOrigin() {
     const origins = this.manager.allConfigs.map(conf => {
       return {
@@ -255,7 +255,7 @@ export class Control {
       }
     );
   }
-
+ // 更新mod
   updateMod() {
     const modDiffs = this.manager.diffs.modDiffs;
     const items = modDiffs.map(item => {
@@ -264,6 +264,7 @@ export class Control {
         description: `${item.details[0]}等 ${item.details.length} 条更新`
       } as vscode.QuickPickItem;
     });
+    // 生成文件
     const oldFiles = this.manager.getGeneratedFiles();
 
     vscode.window.showQuickPick(items).then(
@@ -283,12 +284,15 @@ export class Control {
             return new Promise(async (resolve, reject) => {
               try {
                 p.report({ message: '开始更新...' });
-
+                // mod一致
                 this.manager.makeSameMod(modName);
+                // 锁文件
                 await this.manager.lock();
-
+                // 计算差异
                 this.manager.calDiffs();
+                // 更新试图
                 this.ui.reRender();
+                // 更新旧的文件
                 await this.manager.update(oldFiles);
 
                 p.report({ message: '更新成功！' });
@@ -304,11 +308,13 @@ export class Control {
       e => {}
     );
   }
-
+  // 更新基类
   updateBo() {
+    // 差异化基类
     const boDiffs = this.manager.diffs.boDiffs;
+    // 旧文件
     const oldFiles = this.manager.getGeneratedFiles();
-
+    // 差异化基类的选项
     const items = boDiffs.map(item => {
       return {
         label: item.name,
@@ -333,10 +339,10 @@ export class Control {
             return new Promise(async (resolve, reject) => {
               try {
                 p.report({ message: '开始更新...' });
-
+                // 基类一致
                 this.manager.makeSameBase(boName);
                 await this.manager.lock();
-
+                // 计算，渲染更新
                 this.manager.calDiffs();
                 this.ui.reRender();
                 await this.manager.update(oldFiles);
@@ -393,7 +399,7 @@ export class Control {
       e => {}
     );
   }
-
+  // 同步远程数据
   syncRemote() {
     showProgress('syncRemote', this.manager, async report => {
       report('远程更新中...');
@@ -407,6 +413,7 @@ export class Control {
 
         report('同步完成！');
         this.ui.reRender();
+        this.manager.openReport()
       } catch (e) {
         vscode.window.showErrorMessage(e.message);
       }

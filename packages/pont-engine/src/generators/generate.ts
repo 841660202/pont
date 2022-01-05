@@ -566,7 +566,7 @@ export class FilesManager {
       await fs.writeFile(lockFilePath, newLockContent);
     }
   }
-
+  // 文件差异化
   diffFiles(newFiles: {}, lastFiles: {}, dir = this.baseDir) {
     const task = {
       deletes: [] as string[],
@@ -643,7 +643,7 @@ export class FilesManager {
 
     return task;
   }
-
+  // 格式化文件
   public formatFile(code: string, name = '') {
     if (name && name.endsWith('.json')) {
       return code;
@@ -651,7 +651,7 @@ export class FilesManager {
 
     return format(code, this.prettierConfig);
   }
-
+  // 更新文件
   async updateFiles(files: {}) {
     await Promise.all(
       _.map(files, async (value: string, filePath) => {

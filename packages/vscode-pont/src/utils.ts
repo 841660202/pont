@@ -42,7 +42,8 @@ export async function syncNpm() {
     const hasProjectVersion = fs.existsSync(projectVersionPath);
     const useYarn = fs.existsSync(yarnPath);
 
-    const cmd = useYarn ? 'yarn add -D pont-engine@' + currVersion : 'npm i -D pont-engine@' + currVersion;
+    const cmd = 'cnpm i -D pont-engine@' + currVersion;
+    // const cmd = useYarn ? 'yarn add -D pont-engine@' + currVersion : 'cnpm i -D pont-engine@' + currVersion;
 
     if (!hasProjectVersion) {
       console.log(cmd);

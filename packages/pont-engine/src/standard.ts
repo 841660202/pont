@@ -188,7 +188,7 @@ export class StandardDataType extends Contextable {
   getDefNameWithTemplate() {}
 
   generateCodeWithTemplate() {}
-
+  // 获取声明名字
   getDefName(originName) {
     let name = this.typeName;
 
@@ -198,7 +198,7 @@ export class StandardDataType extends Contextable {
 
     return name;
   }
-
+  // 获取枚举类型
   getEnumType() {
     return this.enum.join(' | ') || 'string';
   }
@@ -232,7 +232,7 @@ export class StandardDataType extends Contextable {
 
     return name || 'any';
   }
-
+  // 获取初始值
   getInitialValue(usingDef = true) {
     if (this.typeName === 'Array') {
       return '[]';
@@ -363,7 +363,7 @@ export class Interface extends Contextable {
   get responseType() {
     return this.response.generateCode(this.getDsName());
   }
-
+  // 获取参数代码
   getParamsCode(className = 'Params', surrounding = Surrounding.typeScript) {
     return `class ${className} {
       ${this.parameters
@@ -373,7 +373,7 @@ export class Interface extends Contextable {
     }
   `;
   }
-
+  // 获取参数列表
   getParamList() {
     const form = !!this.parameters.find(param => param.in === 'formData');
     const paramList = [
@@ -399,7 +399,7 @@ export class Interface extends Contextable {
 
     return paramList;
   }
-
+  // 获取请求内容
   getRequestContent() {
     const paramList = this.getParamList().filter(param => param.paramType);
     const method = this.method.toUpperCase();
@@ -415,7 +415,7 @@ export class Interface extends Contextable {
       ${hasOptions ? '...options,' : ''}
     }`;
   }
-
+  // 获取请求参数
   getRequestParams(surrounding = Surrounding.typeScript) {
     const paramList = this.getParamList().filter(param => param.paramType);
 
@@ -424,10 +424,11 @@ export class Interface extends Contextable {
     }
 
     return paramList
+    // 有默认值的添加默认值
       .map(param => `${param.paramKey}${param.initialValue ? ` = ${param.initialValue}` : ''}`)
       .join(', ');
   }
-
+  // 获取body参数代码
   getBodyParamsCode() {
     const bodyParam = this.parameters.find(param => param.in === 'body');
 
@@ -484,12 +485,11 @@ export class StandardDataSource {
   public name: string;
   public baseClasses: BaseClass[];
   public mods: Mod[];
-
+  // 重新排序
   reOrder() {
     this.baseClasses = _.orderBy(this.baseClasses, 'name');
     this.mods = _.orderBy(this.mods, 'name');
   }
-
   // validate the if the dataSource is valid
   validate() {
     const errors = [] as string[];
@@ -522,7 +522,7 @@ export class StandardDataSource {
 
     return errors;
   }
-
+  // 序列化
   serialize() {
     return JSON.stringify(
       {
@@ -533,12 +533,12 @@ export class StandardDataSource {
       2
     );
   }
-
+  // 设置上下文
   setContext() {
     this.baseClasses.forEach(base => base.setContext({ dataSource: this }));
     this.mods.forEach(mod => mod.setContext({ dataSource: this }));
   }
-
+  // 
   constructor(standard: { mods: Mod[]; name: string; baseClasses: BaseClass[] }) {
     this.mods = standard.mods;
     if (standard.name) {

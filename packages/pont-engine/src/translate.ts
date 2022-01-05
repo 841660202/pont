@@ -37,7 +37,7 @@ export class Translate {
     }
     return wordArray.join('');
   }
-
+  // 同步翻译
   async translateAsync(text: string, engineIndex = 0) {
     if (this.dict[text]) {
       return this.dict[text];
